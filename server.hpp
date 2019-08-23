@@ -17,7 +17,8 @@
 
 #include "client.hpp"
 #include "error.hpp"
-
+/* this class is used to setup a server which handles cyphered or uncyphered connexions with clients
+ */
 class server
 {
 public:

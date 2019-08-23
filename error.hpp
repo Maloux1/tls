@@ -14,6 +14,8 @@
 #define ERROR_SERVER_NOT_TLS 6
 #define ERROR_SERVER_FULL 7
 
+/* this class handles error output for the server and client classes 
+ */
 class serverError
 {
 public:
