@@ -12,6 +12,7 @@
 #define ERROR_CLIENT_READ 4
 #define ERROR_SERVER_NOT_LAUNCHED 5
 #define ERROR_SERVER_NOT_TLS 6
+#define ERROR_SERVER_FULL 7
 
 class serverError
 {

@@ -1,7 +1,5 @@
 #include "client.hpp"
 
-#include <iostream>
-
 using namespace std;
 
 client::client(bool tlsMode, bool blocking) : m_tlsMode(tlsMode), m_blocking(blocking), m_handshakeMade(false), m_socket(-1), m_ssl(NULL), m_inactivityCounter(0), m_id(-1){

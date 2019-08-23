@@ -23,6 +23,12 @@ serverError::serverError(const std::string& s, uint16_t errorType) : m_errorType
 	else if (m_errorType == ERROR_SERVER_NOT_TLS){
 		errorMessage += "Server is setup in non tls mode";
 	}
+	else if (m_errorType == ERROR_SERVER_FULL){
+		errorMessage += "Server full";
+	}
+	else {
+		errorMessage += "unknown error";
+	}
 	if (isatty(fileno(stderr))){
 		m_message += "\x1b[31;1m=== " + errorMessage + " ===\x1b[0m\n\x1b[33merrno is : ";
 	}

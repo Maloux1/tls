@@ -1,6 +1,5 @@
 #include "server.hpp"
 
-#include <iostream>
 using namespace std;
 
 server::server(uint16_t port, uint32_t maxClients, bool tlsMode, bool blocking, uint32_t maxInactivityCounter, const string& pathToKeyFile, const string& pathToCertFile) : m_tlsMode(tlsMode), m_blocking(blocking), m_port(port), m_mainSocket(-1), m_sslContext(NULL), m_pathToKeyFile(pathToKeyFile), m_pathToCertFile(pathToCertFile), m_maxClients(maxClients), m_maxInactivityCounter(maxInactivityCounter){
@@ -63,6 +62,10 @@ bool server::launch(){
 }
 
 void server::shutdown(){
+	for (auto i=m_clients.begin(); i!=m_clients.end();i++){
+		kickClient(*i);
+		m_clients.erase(i);
+	}
 	if (m_mainSocket != -1){
 		close(m_mainSocket);
 		m_mainSocket = -1;
@@ -86,6 +89,9 @@ bool server::acceptClient(){
 	try {
 		if (m_mainSocket == -1){
 			throw serverError("trying to accept client on an unlaunched server", ERROR_SERVER_NOT_LAUNCHED);
+		}
+		if (m_maxClients <= m_clients.size()){
+			throw serverError("server is full can't accept client (" + to_string(m_clients.size()) + "/" + to_string(m_maxClients) + ")", ERROR_SERVER_FULL);
 		}
 		client * tmpClient = new client(m_tlsMode, m_blocking);
 		if (tmpClient->accept(m_mainSocket, m_sslContext) == true){

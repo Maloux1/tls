@@ -1,20 +1,21 @@
 #ifndef CLIENT_HPP
 #define CLIENT_HPP
 
-#include <openssl/ssl.h>
+#include <unistd.h>
+#include <string.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <unistd.h>
 #include <fcntl.h>
-#include <string.h>
-#include <signal.h>
 
+#include <openssl/ssl.h>
+
+#include <string>
 #include <cstdint>
 
-#include "error.hpp"
-
 #define MAX_BUFFER_SIZE 8192
+
+#include "error.hpp"
 
 class client
 {
