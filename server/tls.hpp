@@ -3,6 +3,5 @@
 
 #include "server.hpp"
 #include "client.hpp"
-#include "server.hpp"
 
 #endif /* TLS_HPP */
