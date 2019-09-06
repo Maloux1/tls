@@ -163,13 +163,15 @@ void server::readFromClients(int64_t callback(int64_t, char [MAX_BUFFER_SIZE], v
 			j++;
 			memset(buffer, 0, sizeof(char) * MAX_BUFFER_SIZE);
 			if ((*i)->readFromClient(buffer)){
-				int tmp = callback((*i)->getClientId(), buffer, data);
-				if (tmp > 0){
-					(*i)->identifyClient(tmp);
-				}
-				else if (tmp == -1){
-					kickClient(*i);
-					m_clients.erase(i);
+				if (callback != NULL){
+					int tmp = callback((*i)->getClientId(), buffer, data);
+					if (tmp > 0){
+						(*i)->identifyClient(tmp);
+					}
+					else if (tmp == -1){
+						kickClient(*i);
+						m_clients.erase(i);
+					}
 				}
 			}
 			else{
@@ -195,10 +197,12 @@ void server::writeToClients(bool callback(int64_t, char [MAX_BUFFER_SIZE], void 
 			auto j = i;
 			j++;
 			memset(buffer, 0, sizeof(char) * MAX_BUFFER_SIZE);
-			if (callback((*i)->getClientId(), buffer, data)){
-				if (!(*i)->writeToClient(buffer)){
-					kickClient(*i);
-					m_clients.erase(i);
+			if (callback != NULL){
+				if (callback((*i)->getClientId(), buffer, data)){
+					if (!(*i)->writeToClient(buffer)){
+						kickClient(*i);
+						m_clients.erase(i);
+					}
 				}
 			}
 			i=j;

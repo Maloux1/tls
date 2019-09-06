@@ -61,8 +61,8 @@ bool client::doHandshake(){
 			int ret = SSL_accept(m_ssl);
 			if (ret != 1){
 				int tmp = SSL_get_error(m_ssl, ret);
-				if (tmp != SSL_ERROR_WANT_READ && tmp != SSL_ERROR_WANT_WRITE){
-					throw serverError("handshake can't be made", ERROR_CLIENT_HANDSHAKE);
+				if (tmp != SSL_ERROR_WANT_READ && tmp != SSL_ERROR_WANT_WRITE && tmp != SSL_ERROR_WANT_CONNECT && tmp != SSL_ERROR_WANT_ACCEPT){
+					throw serverError("handshake can't be made (ssl_get_error returns : " + to_string(tmp) + ")", ERROR_CLIENT_HANDSHAKE);
 					return false;
 				}
 			}

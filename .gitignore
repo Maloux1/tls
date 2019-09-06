@@ -1,3 +1,10 @@
 server/main.cpp
 server/*.o
 server/main
+client/main.cpp
+client/*.o
+client/main
+server/keys_and_certs/*.key
+server/keys_and_certs/*.crt
+server/keys_and_certs/CA/*.key
+server/keys_and_certs/CA/*.crt
