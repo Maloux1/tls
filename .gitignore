@@ -5,6 +5,7 @@ client/main.cpp
 client/*.o
 client/main
 server/keys_and_certs/*.key
-server/keys_and_certs/*.crt
-server/keys_and_certs/CA/*.key
-server/keys_and_certs/CA/*.crt
+server/keys_and_certs/*.pem
+server/keys_and_certs/CA/CA.key
+server/keys_and_certs/CA/CA.pem
+client/CA.pem
