@@ -14,6 +14,12 @@ serverError::serverError(const std::string& s, uint16_t errorType) : m_errorType
 	else if (m_errorType == ERROR_CLIENT_WRITE){
 		errorMessage += "error while sending data";
 	}
+	else if (m_errorType == ERROR_CLIENT_READ){
+		errorMessage += "error while reading data";
+	}
+	else if (m_errorType == ERROR_CLIENT_UNCONNECTED){
+		errorMessage += "client is not connected";
+	}
 	else {
 		errorMessage += "unknown error";
 	}

@@ -26,6 +26,9 @@ serverError::serverError(const std::string& s, uint16_t errorType) : m_errorType
 	else if (m_errorType == ERROR_SERVER_FULL){
 		errorMessage += "Server full";
 	}
+	else if (m_errorType == ERROR_CLIENT_WRITE){
+		errorMessage += "Client write failed";
+	}
 	else {
 		errorMessage += "unknown error";
 	}

@@ -152,19 +152,26 @@ bool client::readFromClient(char buffer[MAX_BUFFER_SIZE]){
 
 bool client::writeToClient(char buffer[MAX_BUFFER_SIZE]){
 	try {
+		int max_buffer_size;
+		if (strlen(buffer) < MAX_BUFFER_SIZE){
+			max_buffer_size = strlen(buffer);
+		}
+		else {
+			max_buffer_size = MAX_BUFFER_SIZE;
+		}
 		if (m_tlsMode && m_handshakeMade){
 			int ret;
-			if ((ret = SSL_write(m_ssl, buffer, MAX_BUFFER_SIZE)) <= 0){
+			if ((ret = SSL_write(m_ssl, buffer, max_buffer_size)) <= 0){
 				int tmp = SSL_get_error(m_ssl, ret);
 				if (tmp != SSL_ERROR_WANT_WRITE && tmp != SSL_ERROR_WANT_READ){
-					throw serverError("error while writing to client (tls)", ERROR_CLIENT_READ);
+					throw serverError("error while writing to client (tls)", ERROR_CLIENT_WRITE);
 				}
 			}
 		}
 		else if (!m_tlsMode){
-			if (send(m_socket, buffer, MAX_BUFFER_SIZE, 0) <= 0){
+			if (send(m_socket, buffer, max_buffer_size, 0) <= 0){
 				if (errno != EWOULDBLOCK){
-					throw serverError("error while writing to client (non-tls)", ERROR_CLIENT_READ);
+					throw serverError("error while writing to client (non-tls)", ERROR_CLIENT_WRITE);
 				}
 			}
 		}

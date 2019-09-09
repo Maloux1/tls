@@ -9,6 +9,8 @@
 #define ERROR_CLIENT_RESOLVE_HOSTNAME 1
 #define ERROR_CLIENT_CONNECT 2
 #define ERROR_CLIENT_WRITE 3
+#define ERROR_CLIENT_READ 4
+#define ERROR_CLIENT_UNCONNECTED 5
 
 /* this class handles error output for the server and client classes
  */

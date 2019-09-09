@@ -3,6 +3,9 @@
 using namespace std;
 
 server::server(uint16_t port, uint32_t maxClients, bool tlsMode, bool blocking, uint32_t maxInactivityCounter, const string& pathToKeyFile, const string& pathToCertFile) : m_tlsMode(tlsMode), m_blocking(blocking), m_port(port), m_mainSocket(-1), m_sslContext(NULL), m_pathToKeyFile(pathToKeyFile), m_pathToCertFile(pathToCertFile), m_maxClients(maxClients), m_maxInactivityCounter(maxInactivityCounter){
+	if (tlsMode){
+		SSL_library_init();
+	}
 	signal(SIGPIPE, SIG_IGN);
 	memset(&m_serverAddress, 0, sizeof(m_serverAddress));
 }
