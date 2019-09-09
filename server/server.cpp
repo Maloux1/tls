@@ -155,7 +155,7 @@ void server::cleanupClients(){
 	}
 }
 
-void server::readFromClients(int64_t callback(int64_t, char [MAX_BUFFER_SIZE], void *), void * data){
+void server::readFromClients(int64_t callback(int64_t, char [MAX_BUFFER_SIZE], void *, bool *), void * data){
 	try {
 		if (m_mainSocket == -1){
 			throw serverError("trying to read from clients on an unlaunched server", ERROR_SERVER_NOT_LAUNCHED);
@@ -167,13 +167,17 @@ void server::readFromClients(int64_t callback(int64_t, char [MAX_BUFFER_SIZE], v
 			memset(buffer, 0, sizeof(char) * MAX_BUFFER_SIZE);
 			if ((*i)->readFromClient(buffer)){
 				if (callback != NULL){
-					int tmp = callback((*i)->getClientId(), buffer, data);
+					bool response = false;
+					int tmp = callback((*i)->getClientId(), buffer, data, &response);
 					if (tmp > 0){
 						(*i)->identifyClient(tmp);
 					}
 					else if (tmp == -1){
 						kickClient(*i);
 						m_clients.erase(i);
+					}
+					if (tmp >= 0 && response){
+						(*i)->writeToClient(buffer);
 					}
 				}
 			}

@@ -55,11 +55,12 @@ public:
 	void cleanupClients();
 	/* kick clients which haven't send a single packet maxInactivityCounter times consecutively or which have left
 	 */
-	void readFromClients(int64_t callback(int64_t, char [MAX_BUFFER_SIZE], void *), void * data);
+	void readFromClients(int64_t callback(int64_t, char [MAX_BUFFER_SIZE], void *, bool *), void * data);
 	/* read data from clients and call the callback function (for each client that as send a packet) with :
 	 * the client id as an int64_t (-1 default after connexion)
 	 * a buffer with the packet received
 	 * the pointer data is passed to callback as a void *
+	 * a pointer to a boolean, if callback returns >= 0 and this boolean is true, content of buffer is immediatly sent to the client
 	 * the callback must return an int64_t which is the new client id (0 for unchanged, -1 will kick client, positive will change client id)
 	 */
 	void writeToClients(bool callback(int64_t, char [MAX_BUFFER_SIZE], void *), void * data	);
