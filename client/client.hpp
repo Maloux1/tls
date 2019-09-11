@@ -21,13 +21,14 @@
 class client
 {
 public:
-	client(bool tlsMode, bool blocking, std::string serverIP_URL, std::string serverPort, std::string pathToCAFile = "");
+	client(bool tlsMode, bool blocking, std::string serverIP_URL, std::string serverPort, std::string pathToCAFile = "", bool checkServer = false);
 	/*
 	 * tlsMode : true if tls connexion should be enabled
 	 * blocking : true if server should be on blocking mode
 	 * serverIP_URL : string containing the ip or url of the server
 	 * serverPort : string containing the port of the server
-	 * pathToCAFile : if tlsMode is true, this specifies an certifiacte which will be trusted by the client
+	 * pathToCAFile : if tlsMode is true, this specifies a certifiacte which will be trusted by the client
+	 * checkServer : true if server key should be checked
 	 */
 	~client();
 	bool connect();
@@ -51,6 +52,7 @@ private:
 	bool m_blocking;
 	bool m_resolveHostname;
 	bool m_connected;
+	bool m_checkServer;
 	struct sockaddr_in m_serverAddress;
 	std::string m_pathToCAFile;
 	SSL_CTX * m_sslContext;

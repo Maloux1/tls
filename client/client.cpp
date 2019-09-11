@@ -2,7 +2,7 @@
 
 using namespace std;
 
-client::client(bool tlsMode, bool blocking, string serverIP_URL, string serverPort, string pathToCAFile) : m_socket(-1), m_tlsMode(tlsMode), m_blocking(blocking), m_resolveHostname(false), m_connected(false), m_pathToCAFile(pathToCAFile), m_sslContext(NULL){
+client::client(bool tlsMode, bool blocking, string serverIP_URL, string serverPort, string pathToCAFile, bool checkServer) : m_socket(-1), m_tlsMode(tlsMode), m_blocking(blocking), m_resolveHostname(false), m_connected(false), m_checkServer(checkServer), m_pathToCAFile(pathToCAFile), m_sslContext(NULL){
 	signal(SIGPIPE, SIG_IGN);
 	if (tlsMode){
 		SSL_library_init();
@@ -63,11 +63,16 @@ bool client::connect(){
 			if (SSL_CTX_set_min_proto_version(m_sslContext, TLS1_3_VERSION) == 0){
 				throw(serverError("SSL_CTX_set_min_proto_version error", ERROR_CLIENT_CONNECT));
 			}
-			if (SSL_CTX_load_verify_locations(m_sslContext, m_pathToCAFile.c_str(), NULL) != 1){
-				throw(serverError("can't load file " + m_pathToCAFile, ERROR_CLIENT_CONNECT));
+			if (m_checkServer){
+				if (SSL_CTX_load_verify_locations(m_sslContext, m_pathToCAFile.c_str(), NULL) != 1){
+					throw(serverError("can't load file " + m_pathToCAFile, ERROR_CLIENT_CONNECT));
+				}
+				SSL_CTX_set_verify(m_sslContext, SSL_VERIFY_PEER, NULL);
+				SSL_CTX_set_verify_depth(m_sslContext, 1);
 			}
-			SSL_CTX_set_verify(m_sslContext, SSL_VERIFY_PEER, NULL);
-			SSL_CTX_set_verify_depth(m_sslContext, 1);
+			else {
+				SSL_CTX_set_verify(m_sslContext, SSL_VERIFY_NONE, NULL);
+			}
 			m_ssl = SSL_new(m_sslContext);
 			if (m_ssl == NULL){
 				throw serverError("can't create SSL", ERROR_CLIENT_CONNECT);
