@@ -1,3 +1,5 @@
+#!/bin/bash
+
 read -p "key and cert name :" x
 
 openssl genrsa -out $(echo $x).key 2048
