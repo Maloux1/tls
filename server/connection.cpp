@@ -1,25 +1,25 @@
-#include "client.hpp"
+#include "connection.hpp"
 
 using namespace std;
 
-client::client(bool tlsMode, bool blocking) : m_tlsMode(tlsMode), m_blocking(blocking), m_handshakeMade(false), m_socket(-1), m_ssl(NULL), m_inactivityCounter(0), m_id(-1){
-	memset(&m_clientAddress, 0, sizeof(m_clientAddress));
+connection::connection(bool tlsMode, bool blocking) : m_tlsMode(tlsMode), m_blocking(blocking), m_handshakeMade(false), m_socket(-1), m_ssl(NULL), m_inactivityCounter(0), m_id(-1){
+	memset(&m_connectionAddress, 0, sizeof(m_connectionAddress));
 }
 
-client::~client(){
+connection::~connection(){
 	disconnect();
 }
 
-int32_t client::getSocket() const{
+int32_t connection::getSocket() const{
 	return m_socket;
 }
 
-bool client::accept(int32_t mainSocket, SSL_CTX * sslContext){
+bool connection::accept(int32_t mainSocket, SSL_CTX * sslContext){
 	try {
-		socklen_t addressLen = sizeof(m_clientAddress);
-		int32_t ret = ::accept(mainSocket, (struct sockaddr *)&m_clientAddress, &addressLen);
+		socklen_t addressLen = sizeof(m_connectionAddress);
+		int32_t ret = ::accept(mainSocket, (struct sockaddr *)&m_connectionAddress, &addressLen);
 		if (ret == -1 && errno != EWOULDBLOCK){
-			throw serverError("can't accept client", ERROR_CLIENT_ACCEPT);
+			throw serverError("can't accept connection", ERROR_CLIENT_ACCEPT);
 		}
 		else if (ret == -1 && errno == EWOULDBLOCK){
 			return false;
@@ -55,7 +55,7 @@ bool client::accept(int32_t mainSocket, SSL_CTX * sslContext){
 	return false;
 }
 
-bool client::doHandshake(){
+bool connection::doHandshake(){
 	try {
 		if (m_tlsMode && !m_handshakeMade){
 			int ret = SSL_accept(m_ssl);
@@ -79,24 +79,24 @@ bool client::doHandshake(){
 	return false;
 }
 
-bool client::isTls() const{
+bool connection::isTls() const{
 	return m_tlsMode;
 }
 
-bool client::isBlocking() const{
+bool connection::isBlocking() const{
 	return m_blocking;
 }
 
-bool client::ishandshakeMade() const{
+bool connection::ishandshakeMade() const{
 	return m_handshakeMade;
 }
 
-uint32_t client::inactivityCounter() const{
+uint32_t connection::inactivityCounter() const{
 	return m_inactivityCounter;
 }
 
-void client::disconnect(){
-	memset(&m_clientAddress, 0, sizeof(m_clientAddress));
+void connection::disconnect(){
+	memset(&m_connectionAddress, 0, sizeof(m_connectionAddress));
 	if (m_socket != -1){
 		shutdown(m_socket, SHUT_RDWR);
 		close(m_socket);
@@ -112,7 +112,7 @@ void client::disconnect(){
 	m_id = -1;
 }
 
-bool client::readFromClient(char buffer[MAX_BUFFER_SIZE]){
+bool connection::readFromConnection(char buffer[MAX_BUFFER_SIZE]){
 	try {
 		m_inactivityCounter++;
 		if (m_tlsMode && m_handshakeMade){
@@ -120,7 +120,7 @@ bool client::readFromClient(char buffer[MAX_BUFFER_SIZE]){
 			if ((ret = SSL_read(m_ssl, buffer, MAX_BUFFER_SIZE)) <= 0){
 				int tmp = SSL_get_error(m_ssl, ret);
 				if (tmp != SSL_ERROR_WANT_WRITE && tmp != SSL_ERROR_WANT_READ){
-					throw serverError("error while reading from client (tls)", ERROR_CLIENT_READ);
+					throw serverError("error while reading from connection (tls)", ERROR_CLIENT_READ);
 				}
 			}
 			else {
@@ -131,7 +131,7 @@ bool client::readFromClient(char buffer[MAX_BUFFER_SIZE]){
 			int ret;
 			if ((ret = recv(m_socket, buffer, MAX_BUFFER_SIZE, 0)) < 0){
 				if (errno != EWOULDBLOCK){
-					throw serverError("error while reading from client (non-tls)", ERROR_CLIENT_READ);
+					throw serverError("error while reading from connection (non-tls)", ERROR_CLIENT_READ);
 				}
 			}
 			else if (ret != 0) {
@@ -150,7 +150,7 @@ bool client::readFromClient(char buffer[MAX_BUFFER_SIZE]){
 	return false;
 }
 
-bool client::writeToClient(char buffer[MAX_BUFFER_SIZE]){
+bool connection::writeToConnection(char buffer[MAX_BUFFER_SIZE]){
 	try {
 		int max_buffer_size;
 		if (strlen(buffer) < MAX_BUFFER_SIZE){
@@ -164,14 +164,14 @@ bool client::writeToClient(char buffer[MAX_BUFFER_SIZE]){
 			if ((ret = SSL_write(m_ssl, buffer, max_buffer_size)) <= 0){
 				int tmp = SSL_get_error(m_ssl, ret);
 				if (tmp != SSL_ERROR_WANT_WRITE && tmp != SSL_ERROR_WANT_READ){
-					throw serverError("error while writing to client (tls)", ERROR_CLIENT_WRITE);
+					throw serverError("error while writing to connection (tls)", ERROR_CLIENT_WRITE);
 				}
 			}
 		}
 		else if (!m_tlsMode){
 			if (send(m_socket, buffer, max_buffer_size, 0) <= 0){
 				if (errno != EWOULDBLOCK){
-					throw serverError("error while writing to client (non-tls)", ERROR_CLIENT_WRITE);
+					throw serverError("error while writing to connection (non-tls)", ERROR_CLIENT_WRITE);
 				}
 			}
 		}
@@ -184,10 +184,10 @@ bool client::writeToClient(char buffer[MAX_BUFFER_SIZE]){
 	return false;
 }
 
-void client::identifyClient(int64_t id){
+void connection::identifyConnection(int64_t id){
 	m_id = id;
 }
 
-int64_t client::getClientId() const{
+int64_t connection::getConnectionId() const{
 	return m_id;
 }

@@ -12,7 +12,7 @@
 #define ERROR_CLIENT_READ 4
 #define ERROR_CLIENT_UNCONNECTED 5
 
-/* this class handles error output for the server and client classes
+/* this class handles error output for the client class
  */
 class serverError
 {

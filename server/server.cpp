@@ -2,7 +2,7 @@
 
 using namespace std;
 
-server::server(uint16_t port, uint32_t maxClients, bool tlsMode, bool blocking, uint32_t maxInactivityCounter, const string& pathToKeyFile, const string& pathToCertFile) : m_tlsMode(tlsMode), m_blocking(blocking), m_port(port), m_mainSocket(-1), m_sslContext(NULL), m_pathToKeyFile(pathToKeyFile), m_pathToCertFile(pathToCertFile), m_maxClients(maxClients), m_maxInactivityCounter(maxInactivityCounter){
+server::server(uint16_t port, uint32_t maxConnections, bool tlsMode, bool blocking, uint32_t maxInactivityCounter, const string& pathToKeyFile, const string& pathToCertFile) : m_tlsMode(tlsMode), m_blocking(blocking), m_port(port), m_mainSocket(-1), m_sslContext(NULL), m_pathToKeyFile(pathToKeyFile), m_pathToCertFile(pathToCertFile), m_maxConnections(maxConnections), m_maxInactivityCounter(maxInactivityCounter){
 	if (tlsMode){
 		SSL_library_init();
 	}
@@ -65,9 +65,9 @@ bool server::launch(){
 }
 
 void server::shutdown(){
-	for (auto i=m_clients.begin(); i!=m_clients.end();i++){
-		kickClient(*i);
-		m_clients.erase(i);
+	for (auto i=m_connections.begin(); i!=m_connections.end(); i++){
+		kickConnection(*i);
+		m_connections.erase(i);
 	}
 	if (m_mainSocket != -1){
 		close(m_mainSocket);
@@ -81,27 +81,27 @@ void server::shutdown(){
 	return;
 }
 
-uint32_t server::maxClients() const{
-	return m_maxClients;
+uint32_t server::maxConnections() const{
+	return m_maxConnections;
 }
-uint32_t server::connectedClients() const{
-	return m_clients.size();
+uint32_t server::connectedConnections() const{
+	return m_connections.size();
 }
 
-bool server::acceptClient(){
+bool server::acceptConnection(){
 	try {
 		if (m_mainSocket == -1){
 			throw serverError("trying to accept client on an unlaunched server", ERROR_SERVER_NOT_LAUNCHED);
 		}
-		if (m_maxClients <= m_clients.size()){
-			throw serverError("server is full can't accept client (" + to_string(m_clients.size()) + "/" + to_string(m_maxClients) + ")", ERROR_SERVER_FULL);
+		if (m_maxConnections <= m_connections.size()){
+			throw serverError("server is full can't accept client (" + to_string(m_connections.size()) + "/" + to_string(m_maxConnections) + ")", ERROR_SERVER_FULL);
 		}
-		client * tmpClient = new client(m_tlsMode, m_blocking);
-		if (tmpClient->accept(m_mainSocket, m_sslContext) == true){
-			m_clients.push_back(tmpClient);
+		connection * tmpConnection = new connection(m_tlsMode, m_blocking);
+		if (tmpConnection->accept(m_mainSocket, m_sslContext) == true){
+			m_connections.push_back(tmpConnection);
 		}
 		else {
-			delete tmpClient;
+			delete tmpConnection;
 			return false;
 		}
 		return true;
@@ -112,7 +112,7 @@ bool server::acceptClient(){
 	return false;
 }
 
-void server::handshakeClients(){
+void server::handshakeConnections(){
 	try {
 		if (m_mainSocket == -1){
 			throw serverError("trying to handshake on an unlaunched server", ERROR_SERVER_NOT_LAUNCHED);
@@ -120,7 +120,7 @@ void server::handshakeClients(){
 		if (!m_tlsMode){
 			throw serverError("trying to handshake on an non-tls server", ERROR_SERVER_NOT_TLS);
 		}
-		for (auto i = m_clients.begin(); i != m_clients.end(); i++){
+		for (auto i = m_connections.begin(); i != m_connections.end(); i++){
 			if (!(*i)->ishandshakeMade() && (*i)->isTls()){
 				(*i)->doHandshake();
 			}
@@ -131,21 +131,21 @@ void server::handshakeClients(){
 	}
 }
 
-void server::kickClient(client * c){
+void server::kickConnection(connection * c){
 	delete c;
 }
 
-void server::cleanupClients(){
+void server::cleanupConnections(){
 	try {
 		if (m_mainSocket == -1){
 			throw serverError("trying to cleanup clients on an unlaunched server", ERROR_SERVER_NOT_LAUNCHED);
 		}
-		for (auto i = m_clients.begin(); i != m_clients.end();){
+		for (auto i = m_connections.begin(); i != m_connections.end();){
 			auto j=i;
 			j++;
 			if (((*i)->inactivityCounter() >= m_maxInactivityCounter && m_maxInactivityCounter != 0) || (*i)->getSocket() == -1){
-				kickClient(*i);
-				m_clients.erase(i);
+				kickConnection(*i);
+				m_connections.erase(i);
 			}
 			i=j;
 		}
@@ -155,35 +155,35 @@ void server::cleanupClients(){
 	}
 }
 
-void server::readFromClients(int64_t callback(int64_t, char [MAX_BUFFER_SIZE], void *, bool *), void * data){
+void server::readFromConnections(int64_t callback(int64_t, char [MAX_BUFFER_SIZE], void *, bool *), void * data){
 	try {
 		if (m_mainSocket == -1){
 			throw serverError("trying to read from clients on an unlaunched server", ERROR_SERVER_NOT_LAUNCHED);
 		}
 		char * buffer = (char*) malloc(sizeof(char) * MAX_BUFFER_SIZE);
-		for (auto i = m_clients.begin(); i != m_clients.end();){
+		for (auto i = m_connections.begin(); i != m_connections.end();){
 			auto j = i;
 			j++;
 			memset(buffer, 0, sizeof(char) * MAX_BUFFER_SIZE);
-			if ((*i)->readFromClient(buffer)){
+			if ((*i)->readFromConnection(buffer)){
 				if (callback != NULL){
 					bool response = false;
-					int tmp = callback((*i)->getClientId(), buffer, data, &response);
+					int tmp = callback((*i)->getConnectionId(), buffer, data, &response);
 					if (tmp > 0){
-						(*i)->identifyClient(tmp);
+						(*i)->identifyConnection(tmp);
 					}
 					else if (tmp == -1){
-						kickClient(*i);
-						m_clients.erase(i);
+						kickConnection(*i);
+						m_connections.erase(i);
 					}
 					if (tmp >= 0 && response){
-						(*i)->writeToClient(buffer);
+						(*i)->writeToConnection(buffer);
 					}
 				}
 			}
 			else{
-				kickClient(*i);
-				m_clients.erase(i);
+				kickConnection(*i);
+				m_connections.erase(i);
 			}
 			i=j;
 		}
@@ -194,21 +194,21 @@ void server::readFromClients(int64_t callback(int64_t, char [MAX_BUFFER_SIZE], v
 	}
 }
 
-void server::writeToClients(bool callback(int64_t, char [MAX_BUFFER_SIZE], void *), void * data){
+void server::writeToConnections(bool callback(int64_t, char [MAX_BUFFER_SIZE], void *), void * data){
 	try {
 		if (m_mainSocket == -1){
 			throw serverError("trying to write to clients on an unlaunched server", ERROR_SERVER_NOT_LAUNCHED);
 		}
 		char * buffer = (char*) malloc(sizeof(char) * MAX_BUFFER_SIZE);
-		for (auto i = m_clients.begin(); i != m_clients.end();){
+		for (auto i = m_connections.begin(); i != m_connections.end();){
 			auto j = i;
 			j++;
 			memset(buffer, 0, sizeof(char) * MAX_BUFFER_SIZE);
 			if (callback != NULL){
-				if (callback((*i)->getClientId(), buffer, data)){
-					if (!(*i)->writeToClient(buffer)){
-						kickClient(*i);
-						m_clients.erase(i);
+				if (callback((*i)->getConnectionId(), buffer, data)){
+					if (!(*i)->writeToConnection(buffer)){
+						kickConnection(*i);
+						m_connections.erase(i);
 					}
 				}
 			}
