@@ -23,16 +23,16 @@ class client
 public:
 	client(bool tlsMode, bool blocking, std::string serverIP_URL, std::string serverPort, std::string pathToCAFile = "", bool checkServer = false);
 	/*
-	 * tlsMode : true if tls connexion should be enabled
-	 * blocking : true if server should be on blocking mode
+	 * tlsMode : true if tls connection should be enabled
+	 * blocking : true if client should be on blocking mode
 	 * serverIP_URL : string containing the ip or url of the server
 	 * serverPort : string containing the port of the server
-	 * pathToCAFile : if tlsMode is true, this specifies a certifiacte which will be trusted by the client
+	 * pathToCAFile : if tlsMode is true, this specifies a certificate which will be trusted by the client
 	 * checkServer : true if server key should be checked
 	 */
 	~client();
 	bool connect();
-	/* this function tries to etablish a connection to the server
+	/* this function tries to establish a connection to the server
 	 * returns true on success, false otherwise
 	 */
 	void disconnect();

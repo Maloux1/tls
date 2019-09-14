@@ -16,7 +16,7 @@
 #define ERROR_CLIENT_WRITE 8
 
 
-/* this class handles error output for the server and connection classes 
+/* this class handles error output for the server and connection classes
  */
 class serverError
 {
