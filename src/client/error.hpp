@@ -3,6 +3,7 @@
 
 #include <unistd.h>
 #include <string.h>
+#include <errno.h>
 
 #include <string>
 
@@ -14,11 +15,11 @@
 
 /* this class handles error output for the client class
  */
-class serverError
+class clientError
 {
 public:
-	serverError(const std::string& s, uint16_t errorType);
-	~serverError();
+	clientError(const std::string& s, uint16_t errorType);
+	~clientError();
 	const char * getMessage() const;
 	void outputMessage() const;
 private:

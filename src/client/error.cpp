@@ -2,7 +2,7 @@
 
 using namespace std;
 
-serverError::serverError(const std::string& s, uint16_t errorType) : m_errorType(errorType), errtmp(errno){
+clientError::clientError(const std::string& s, uint16_t errorType) : m_errorType(errorType), errtmp(errno){
 	m_message = "";
 	string errorMessage("");
 	if (m_errorType == ERROR_CLIENT_RESOLVE_HOSTNAME){
@@ -37,14 +37,14 @@ serverError::serverError(const std::string& s, uint16_t errorType) : m_errorType
 	m_message += "\n";
 }
 
-serverError::~serverError(){
+clientError::~clientError(){
 
 }
 
-const char * serverError::getMessage() const{
+const char * clientError::getMessage() const{
 	return m_message.c_str();
 }
 
-void serverError::outputMessage() const{
+void clientError::outputMessage() const{
 	fprintf(stderr, "%s", m_message.c_str());
 }

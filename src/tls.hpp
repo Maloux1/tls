@@ -1,8 +1,8 @@
 #ifndef TLS_HPP
 #define TLS_HPP
 
-#include "server.hpp"
-#include "connection.hpp"
-#include "client.hpp"
+#include "server/server.hpp"
+#include "server/connection.hpp"
+#include "client/client.hpp"
 
 #endif /* TLS_HPP */

@@ -1,0 +1,10 @@
+#!/bin/bash
+
+rm -rf aclocal.m4 ar-lib autom4te.cache/ compile config.guess config.log config.status config.sub configure depcomp install-sh libtool ltmain.sh Makefile Makefile.in missing
+pushd src
+rm -rf config.h config.h.in* .libs/ libtls.la Makefile Makefile.in stamp-h1
+pushd server
+rm -rf *.o *.lo .deps/ .libs/ libserver.la  Makefile Makefile.in
+popd; pushd client
+rm -rf *.o *.lo .deps/ .libs/ libclient.la  Makefile Makefile.in
+popd; popd
