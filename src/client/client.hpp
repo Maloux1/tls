@@ -5,7 +5,6 @@
 #include <sys/socket.h>
 #include <netdb.h>
 #include <openssl/ssl.h>
-#include <openssl/err.h>
 #include <fcntl.h>
 #include <signal.h>
 #include <netinet/in.h>
