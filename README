@@ -1,0 +1,2 @@
+To install go read INSTALL file or just run :
+./configure && make && sudo make install
