@@ -2,7 +2,7 @@
 
 using namespace std;
 
-server::server(uint16_t port, uint32_t maxConnections, bool tlsMode, bool blocking, uint32_t maxInactivityCounter, const string& pathToKeyFile, const string& pathToCertFile) : m_tlsMode(tlsMode), m_blocking(blocking), m_port(port), m_mainSocket(-1), m_sslContext(NULL), m_pathToKeyFile(pathToKeyFile), m_pathToCertFile(pathToCertFile), m_maxConnections(maxConnections), m_maxInactivityCounter(maxInactivityCounter){
+server::server(uint16_t port, uint32_t maxConnections, bool tlsMode, bool blocking, uint32_t maxInactivityCounter, uint32_t maxConnectionCounter, const string& pathToKeyFile, const string& pathToCertFile) : m_tlsMode(tlsMode), m_blocking(blocking), m_port(port), m_mainSocket(-1), m_sslContext(NULL), m_pathToKeyFile(pathToKeyFile), m_pathToCertFile(pathToCertFile), m_maxConnections(maxConnections), m_maxInactivityCounter(maxInactivityCounter), m_maxConnectionCounter(maxConnectionCounter){
 	if (tlsMode){
 		SSL_library_init();
 	}
@@ -143,7 +143,7 @@ void server::cleanupConnections(){
 		for (auto i = m_connections.begin(); i != m_connections.end();){
 			auto j=i;
 			j++;
-			if (((*i)->inactivityCounter() >= m_maxInactivityCounter && m_maxInactivityCounter != 0) || (*i)->getSocket() == -1){
+			if (((*i)->inactivityCounter() >= m_maxInactivityCounter && m_maxInactivityCounter != 0) || (*i)->getSocket() == -1 || ((*i)->connectionCounter() >= m_maxConnectionCounter && m_maxConnectionCounter != 0)){
 				kickConnection(*i);
 				m_connections.erase(i);
 			}

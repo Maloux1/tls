@@ -22,7 +22,7 @@
 class server
 {
 public:
-	server(uint16_t port, uint32_t maxConnections, bool tlsMode, bool blocking, uint32_t maxInactivityCounter = 0, const std::string& pathToKeyFile = "", const std::string& pathToCertFile = "");
+	server(uint16_t port, uint32_t maxConnections, bool tlsMode, bool blocking, uint32_t maxInactivityCounter = 0, uint32_t maxConnectionCounter = 0, const std::string& pathToKeyFile = "", const std::string& pathToCertFile = "");
 	/* port : the port of the server
 	 * maxConnections : the maximum number of connections that can be connected simultaneously
 	 * tlsMode : enabled : connection is cyphered with tls, disabled : simple sockets
@@ -83,6 +83,7 @@ private:
 	uint32_t m_maxConnections;
 	std::list<connection*> m_connections;
 	uint32_t m_maxInactivityCounter;
+	uint32_t m_maxConnectionCounter;
 };
 
 #endif /* SERVER_HPP */

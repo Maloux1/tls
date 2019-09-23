@@ -2,7 +2,7 @@
 
 using namespace std;
 
-connection::connection(bool tlsMode, bool blocking) : m_tlsMode(tlsMode), m_blocking(blocking), m_handshakeMade(false), m_socket(-1), m_ssl(NULL), m_inactivityCounter(0), m_id(-1){
+connection::connection(bool tlsMode, bool blocking) : m_tlsMode(tlsMode), m_blocking(blocking), m_handshakeMade(false), m_socket(-1), m_ssl(NULL), m_inactivityCounter(0), m_connectionCounter(0), m_id(-1){
 	memset(&m_connectionAddress, 0, sizeof(m_connectionAddress));
 }
 
@@ -109,12 +109,14 @@ void connection::disconnect(){
 	}
 	m_handshakeMade = false;
 	m_inactivityCounter = 0;
+	m_connectionCounter = 0;
 	m_id = -1;
 }
 
 bool connection::readFromConnection(char buffer[MAX_BUFFER_SIZE]){
 	try {
 		m_inactivityCounter++;
+		m_connectionCounter++;
 		if (m_tlsMode && m_handshakeMade){
 			int ret;
 			if ((ret = SSL_read(m_ssl, buffer, MAX_BUFFER_SIZE)) <= 0){

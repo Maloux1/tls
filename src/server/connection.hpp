@@ -43,6 +43,9 @@ public:
 	uint32_t inactivityCounter() const;
 	/* the inactvityCounter increases by one each unscessfull call to readFromConnection
 	 */
+	uint32_t connectionCounter() const;
+	/* the connectionCounter increases by one each call to readFromConnection
+	 */
 	bool readFromConnection(char buffer[MAX_BUFFER_SIZE]);
 	/* tries to read from the connection, result is stored in buffer
 	 * returns true on success, false otherwise
@@ -63,6 +66,7 @@ private:
 	sockaddr_in m_connectionAddress;
 	SSL * m_ssl;
 	uint32_t m_inactivityCounter;
+	uint32_t m_connectionCounter;
 	int64_t m_id;
 	/* connection id is used to differenciate connections
 	 * it is by default to -1
