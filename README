@@ -1,2 +1,6 @@
+libtls is a library to simplify tcp networking.
+It is writen in c++ and supports cyphered and uncyphered connections.
+
+
 To install go read INSTALL file or just run :
 ./configure && make && sudo make install
